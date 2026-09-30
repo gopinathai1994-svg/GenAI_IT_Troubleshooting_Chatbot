@@ -17,8 +17,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
 @app.post("/api/chat")
 async def chat_endpoint(
     prompt: str = Form(...),
@@ -44,7 +42,7 @@ async def chat_endpoint(
         # Parse the JSON string from Gemini into a proper dictionary
         parsed_json = json.loads(cleaned_response)
             
-        # Return the parsed dictionary directly so status, message, data come at root level
+        # Return the parsed dictionary directly so status, message come at root level
         return parsed_json
         
     except json.JSONDecodeError as e:
