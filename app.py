@@ -5,13 +5,16 @@ import json
 
 app = FastAPI(title="AI IT Troubleshooting Chatbot Resolution Assistant API", version="1.0")
 
-# Add CORS Middleware here
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins (ungaloda local 4200 matrum live frontend renduume work aagum)
+    allow_origins=[
+        "https://genai-angular.onrender.com",  # Ungaloda Live Frontend URL
+        "http://localhost:4200",               # Local development
+        "http://localhost:4200/"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.post("/api/chat")
