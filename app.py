@@ -5,12 +5,13 @@ import json
 
 app = FastAPI(title="AI IT Troubleshooting Chatbot Resolution Assistant API", version="1.0")
 
+# Add CORS Middleware here
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Allows all origins (ungaloda local 4200 matrum live frontend renduume work aagum)
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allows all headers
 )
 
 @app.post("/api/chat")
