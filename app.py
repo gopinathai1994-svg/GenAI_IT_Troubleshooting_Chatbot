@@ -5,16 +5,18 @@ import json
 
 app = FastAPI(title="AI IT Troubleshooting Chatbot Resolution Assistant API", version="1.0")
 
+# Configure CORS properly
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://genai-angular.onrender.com",  # Ungaloda Live Frontend URL
-        "http://localhost:4200",               # Local development
+        "https://genai-angular.onrender.com",
+        "https://genai-angular.onrender.com/",  # include trailing slash variant just in case
+        "http://localhost:4200",
         "http://localhost:4200/"
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allows all methods including OPTIONS preflight
+    allow_headers=["*"],  # Allows all headers (Authorization, Content-Type, etc.)
 )
 
 @app.post("/api/chat")
@@ -41,57 +43,60 @@ async def chat_endpoint(
         
         # Parse the JSON string from Gemini into a proper dictionary
         parsed_json = json.loads(cleaned_response)
-            
-        # Return the parsed dictionary directly so status, message come at root level
         return parsed_json
         
     except json.JSONDecodeError as e:
-        return {
-            "status": "error",
-            "message": f"Model did not return valid JSON. Error: {str(e)}.",
-            "solution": [
-                "The AI model response could not be parsed properly.",
-                "Please try submitting your prompt again."
-            ]
-        }
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "status": "error",
+                "message": f"Model did not return valid JSON. Error: {str(e)}.",
+                "solution": [
+                    "The AI model response could not be parsed properly.",
+                    "Please try submitting your prompt again."
+                ]
+            }
+        )
     except Exception as e:
         error_msg = str(e)
         
-        # 1. Handle Gemini 429 Quota / Rate Limit Error cleanly
         if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
-            return {
-                "status": "error",
-                "message": "API Rate Limit Exceeded (429): Free tier request quota reached.",
-                "solution": [
-                    "Check your Google AI Studio plan, billing details, and daily limits.",
-                    "Wait for the retry delay duration (approx. 10 seconds) before trying again.",
-                    "Consider upgrading your tier or pacing your requests."
-                ]
-            }
-            
-        # 2. Handle Gemini 503 High Demand / Unavailable error cleanly
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "status": "error",
+                    "message": "API Rate Limit Exceeded (429): Free tier request quota reached.",
+                    "solution": [
+                        "Check your Google AI Studio plan, billing details, and daily limits.",
+                        "Wait for the retry delay duration before trying again."
+                    ]
+                }
+            )
         elif "503" in error_msg or "UNAVAILABLE" in error_msg:
-            return {
-                "status": "error",
-                "message": "AI model is currently experiencing high demand (503 Service Unavailable).",
-                "solution": [
-                    "Reason: Google Gemini servers are facing temporary high traffic.",
-                    "Action 1: Wait 10 seconds and retry your query.",
-                    "Action 2: The system will automatically succeed on the next attempt."
-                ]
-            }
-            
-        # 3. Handle Other General Errors
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "status": "error",
+                    "message": "AI model is currently experiencing high demand (503 Service Unavailable).",
+                    "solution": [
+                        "Reason: Google Gemini servers are facing temporary high traffic.",
+                        "Action: Wait 10 seconds and retry your query."
+                    ]
+                }
+            )
         else:
-            return {
-                "status": "error",
-                "message": "An unexpected error occurred during execution.",
-                "solution": [
-                    error_msg,
-                    "Verify your inputs, server logs, and environment variables."
-                ]
-            }
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "status": "error",
+                    "message": "An unexpected error occurred during execution.",
+                    "solution": [
+                        error_msg,
+                        "Verify your inputs, server logs, and environment variables."
+                    ]
+                }
+            )
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
