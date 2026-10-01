@@ -1,17 +1,17 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+# from fastapi.middleware.cors import CORSMiddleware
 from services.gemini_service import gemini_service
 import json
 
 app = FastAPI(title="AI IT Troubleshooting Chatbot Resolution Assistant API", version="1.0")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allows requests from any frontend domain (simplest fix)
-    allow_credentials=True,
-    allow_methods=["*"],  # Allows all HTTP methods (GET, POST, OPTIONS, etc.)
-    allow_headers=["*"],  # Allows all headers
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],  # Allows requests from any frontend domain (simplest fix)
+#     allow_credentials=True,
+#     allow_methods=["*"],  # Allows all HTTP methods (GET, POST, OPTIONS, etc.)
+#     allow_headers=["*"],  # Allows all headers
+# )
 
 @app.post("/api/chat")
 async def chat_endpoint(
